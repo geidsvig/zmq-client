@@ -1,9 +1,9 @@
 package com.geidsvig
 
 /**
- * Bootstrap for DistBones Akka microkernel.
+ * Bootstrap for ZmqClient Akka microkernel.
  */
-class DistBonesBoot extends akka.kernel.Bootable {
+class ZmqClientBoot extends akka.kernel.Bootable {
   def startup = {
     
     val config = com.typesafe.config.ConfigFactory.load()

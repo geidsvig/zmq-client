@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PRODUCT=geidsvig
-PROJECT=distbones
+PROJECT=zmq-client
 
 # Requires "sbt dist" to have been run already.
 if [ ! -e target/$PROJECT-dist ]; then

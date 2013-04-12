@@ -1,4 +1,7 @@
-DistBones
+zmq-client
 =========
 
-The bare bone skeleton Scala app to be used with SBT dist packaging to demonstrate AnsiblePlaybooks.
+zeromq client test sandbox
+
+created to run through the 0mq Guide @ http://zguide.zeromq.org/page
+

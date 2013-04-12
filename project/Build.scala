@@ -3,21 +3,21 @@ import Keys._
 import akka.sbt.AkkaKernelPlugin
 import akka.sbt.AkkaKernelPlugin.{ Dist, outputDirectory, distJvmOptions}
  
-object DistBonesBuild extends Build {
+object ZmqClientBuild extends Build {
   val Organization = "com.geidsvig"
   val Version      = "1.0"
   val ScalaVersion = "2.9.2"
 
-  val appDependencies = Dependencies.distBonesKernel
-  libraryDependencies ++= Dependencies.distBonesKernel
+  val appDependencies = Dependencies.zmqClientKernel
+  libraryDependencies ++= Dependencies.zmqClientKernel
  
-  lazy val DistBonesKernel = Project(
-    id = "distbones-kernel",
+  lazy val ZmqClientKernel = Project(
+    id = "zmq-client-kernel",
     base = file("."),
     settings = defaultSettings ++ AkkaKernelPlugin.distSettings ++ Seq(
-      libraryDependencies ++= Dependencies.distBonesKernel,
+      libraryDependencies ++= Dependencies.zmqClientKernel,
       distJvmOptions in Dist := "-Xms2G -Xmx4G -Xss1M -XX:+UseParallelGC -XX:GCTimeRatio=19",
-      outputDirectory in Dist := file("target/distbones-dist")
+      outputDirectory in Dist := file("target/zmq-client-dist")
     )
   )
  
@@ -27,7 +27,7 @@ object DistBonesBuild extends Build {
     scalaVersion := ScalaVersion,
     crossPaths   := false,
     organizationName := "geidsvig",
-    libraryDependencies ++= Dependencies.distBonesKernel
+    libraryDependencies ++= Dependencies.zmqClientKernel
   )
   
   lazy val defaultSettings = buildSettings ++ Seq(
@@ -39,7 +39,7 @@ object DistBonesBuild extends Build {
     // compile options
     scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
     javacOptions  ++= Seq("-Xlint:unchecked", "-Xlint:deprecation"),
-    libraryDependencies ++= Dependencies.distBonesKernel
+    libraryDependencies ++= Dependencies.zmqClientKernel
  
   )
 }
@@ -49,7 +49,7 @@ object Dependencies {
 
   val test = Seq(scalaTest)
  
-  val distBonesKernel = Seq(
+  val zmqClientKernel = Seq(
     akkaKernel, akkaSlf4j, akkaRemote
   ) ++ test
 }
