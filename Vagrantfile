@@ -11,7 +11,7 @@ Vagrant::Config.run do |config|
 
     config.vm.forward_port 80, 8880
 
-    config.vm.host_name = "vagrant-rmq-client"
+    config.vm.host_name = "vagrant-zmq-client"
 
     config.vm.network :hostonly, "192.168.33.70"
 
