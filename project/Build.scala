@@ -64,7 +64,7 @@ object Dependency {
   val akkaSlf4j         = "com.typesafe.akka" % "akka-slf4j"         % V.Akka
   val akkaRemote        = "com.typesafe.akka" % "akka-remote"        % V.Akka
 
-  val jzmq              = "org.zeromq"        % "jzmq"               % "1.0.0"
+  val jzmq              = "org.zeromq"        % "jzmq"               % "2.1.3"
 
   val scalaTest         = "org.scalatest"     %% "scalatest"         % "1.8" % "test"
   
