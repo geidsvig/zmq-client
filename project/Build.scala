@@ -50,7 +50,7 @@ object Dependencies {
   val test = Seq(scalaTest)
  
   val zmqClientKernel = Seq(
-    akkaKernel, akkaSlf4j, akkaRemote, jzmq
+    akkaKernel, akkaSlf4j, akkaRemote
   ) ++ test
 }
  
@@ -63,8 +63,6 @@ object Dependency {
   val akkaKernel        = "com.typesafe.akka" % "akka-kernel"        % V.Akka
   val akkaSlf4j         = "com.typesafe.akka" % "akka-slf4j"         % V.Akka
   val akkaRemote        = "com.typesafe.akka" % "akka-remote"        % V.Akka
-
-  val jzmq              = "org.zeromq"        % "jzmq"               % "2.1.3"
 
   val scalaTest         = "org.scalatest"     %% "scalatest"         % "1.8" % "test"
   
