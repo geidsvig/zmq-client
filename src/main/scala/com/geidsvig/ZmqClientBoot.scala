@@ -23,33 +23,17 @@ class ZmqClientBoot extends akka.kernel.Bootable {
 
     printf("Version string: %s, Version int: %d\n", ZMQ.getVersionString, ZMQ.getFullVersion)
 
-    // start up client
-
-    //HelloWorldClient
-
-    //new WeatherUpdateClient()
-
-    /*
-    trait ZMQDependencies extends ZMQRequirements {
-      val zmqContext: Context = ZMQ.context(1)
-    }
-    // let's start 5
-    system.actorOf(Props(new parallel.Worker("A") with ZMQDependencies)) ! 'start
-    system.actorOf(Props(new parallel.Worker("B") with ZMQDependencies)) ! 'start
-    system.actorOf(Props(new parallel.Worker("C") with ZMQDependencies)) ! 'start
-    system.actorOf(Props(new parallel.Worker("D") with ZMQDependencies)) ! 'start
-    system.actorOf(Props(new parallel.Worker("E") with ZMQDependencies)) ! 'start
-    */
+    val serverConnection = system.settings.config.getString("zmq.server.connection")//"tcp://vagrant-zmq-server:5559"
 
     val start = new Date
-    val msgs = 1000000
-    val sleepDuration = 250
-    val throughput = 1000
+    val msgs = system.settings.config.getInt("zmq.numberOfMessages") // 1000000
+    val sleepDuration = system.settings.config.getLong("zmq.batchWaitDuration") // 250
+    val throughput = system.settings.config.getInt("zmq.throughput") // 1000
     
     trait BrokerDealerDependencies extends BrokerDealerRequirements {
       val zmqContext: Context = ZMQ.context(1)
     }
-    val dealerPoller = system.actorOf(Props(new DealerPollerImpl("tcp://vagrant-zmq-server:5559", 500) with BrokerDealerDependencies))
+    val dealerPoller = system.actorOf(Props(new DealerPollerImpl(serverConnection, 500) with BrokerDealerDependencies))
     val rcvActorRef = system.actorOf(Props(new Actor {
       var msgCounter = 0
       def receive = {
