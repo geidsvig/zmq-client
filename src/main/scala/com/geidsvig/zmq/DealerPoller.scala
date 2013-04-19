@@ -22,11 +22,11 @@ class DealerPollerImpl(url: String, pollerTimeout: Long) extends DealerPoller(ur
   this: BrokerDealerRequirements =>
 
   def handleResponse(envelope: Envelope): Option[Error] = {
-    log info ("Handling ZMQ response: " + envelope)
+    // log info ("Handling ZMQ response: " + envelope)
     envelope.header.get("actorRef") match {
       case Some(actorRef) => {
         val ref = context.system.actorFor(actorRef)
-        log info ("ActorRef " + ref)
+        // log info ("ActorRef " + ref)
         ref ! envelope
         None
       }
@@ -59,6 +59,7 @@ abstract class DealerPoller(url: String, pollerTimeout: Long) extends Actor
   override def preStart() {
     zmqSocket = zmqContext.socket(ZMQ.DEALER)
     zmqSocket.connect(url)
+    zmqSocket.setHWM(30000)
     zmqSocket.setLinger(1)
     zmqSocket.setReceiveTimeOut(500)
     zmqPoller = zmqContext.poller(1)
@@ -75,19 +76,19 @@ abstract class DealerPoller(url: String, pollerTimeout: Long) extends Actor
 
   def receive = {
     case 'poll => {
-      log info ("polling...")
+      // log info ("polling...")
       zmqPoller.poll(pollerTimeout) match {
         case -1 => log error "Failed ZMQ poll" // TODO check errno for error message
-        case 0 => log info ("Nothing on the inbound zmq socket")
+        case 0 => {} // log info ("Nothing on the inbound zmq socket")
         case count => {
-          log info ("Something on inbound zmqp socket. Frame count: " + count)
+          // log info ("Something on inbound zmqp socket. Frame count: " + count)
           (1 to count) map { _ =>
             {
               val frames = zmqReceive()
               val envelope = Envelope.framesToEnvelope(frames)
               handleResponse(envelope) match {
                 case Some(error) => log error (error.toString)
-                case None => log info ("Successfully handled response " + envelope)
+                case None => {} //log info ("Successfully handled response " + envelope)
               }
             }
           }

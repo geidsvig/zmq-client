@@ -42,7 +42,9 @@ class ZmqClientBoot extends akka.kernel.Bootable {
     */
 
     val start = new Date
-    val msgs = 2000
+    val msgs = 1000000
+    val sleepDuration = 250
+    val throughput = 1000
     
     trait BrokerDealerDependencies extends BrokerDealerRequirements {
       val zmqContext: Context = ZMQ.context(1)
@@ -52,9 +54,9 @@ class ZmqClientBoot extends akka.kernel.Bootable {
       var msgCounter = 0
       def receive = {
         case msg: Envelope => {
-          log info("Got message back from DealerPoller " + msg.toString)
+          // log info("Got message back from DealerPoller " + msg.toString)
           msgCounter += 1
-          log info("Number of messages that made round trip: " + msgCounter)
+          log info("Round trip message counter: " + msgCounter)
           if (msgCounter >= msgs) {
             val end = new Date
             log info("Time to round trip " + msgs + " messages : " + (end.getTime() - start.getTime()))
@@ -63,8 +65,13 @@ class ZmqClientBoot extends akka.kernel.Bootable {
         case other => log error("Unsupported message " + other.toString)
       }
     }))
-    (1 to msgs) map { i =>
-      dealerPoller ! Envelope("no_action", Map("actorRef" -> rcvActorRef.path.toStringWithAddress(rcvActorRef.path.address)), "some body of text for test message "+i)
+    var msgCount = 0
+    (1 to (msgs / throughput)) map { i =>
+      (1 to throughput) map { j => {
+        msgCount += 1
+        dealerPoller ! Envelope("no_action", Map("actorRef" -> rcvActorRef.path.toStringWithAddress(rcvActorRef.path.address)), "some body of text for test message "+msgCount)
+      }}
+      Thread.sleep(sleepDuration)
     }
 
   }
