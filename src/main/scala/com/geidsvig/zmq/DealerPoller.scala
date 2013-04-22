@@ -59,7 +59,8 @@ abstract class DealerPoller(url: String, pollerTimeout: Long) extends Actor
   override def preStart() {
     zmqSocket = zmqContext.socket(ZMQ.DEALER)
     zmqSocket.connect(url)
-    zmqSocket.setHWM(30000)
+    zmqSocket.setSndHWM(4000000)
+    zmqSocket.setRcvHWM(4000000)
     zmqSocket.setLinger(1)
     zmqSocket.setReceiveTimeOut(500)
     zmqPoller = zmqContext.poller(1)

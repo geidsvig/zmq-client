@@ -40,12 +40,13 @@ class ZmqClientBoot extends akka.kernel.Bootable {
         case msg: Envelope => {
           // log info("Got message back from DealerPoller " + msg.toString)
           msgCounter += 1
-          log info("Round trip message counter: " + msgCounter)
           if (msgCounter >= msgs) {
+            log info("Round trip message counter: " + msgCounter)
             val end = new Date
             log info("Time to round trip " + msgs + " messages : " + (end.getTime() - start.getTime()))
           }
         }
+        case 'printresults => log info("Round trip message counter: " + msgCounter)
         case other => log error("Unsupported message " + other.toString)
       }
     }))
@@ -55,8 +56,36 @@ class ZmqClientBoot extends akka.kernel.Bootable {
         msgCount += 1
         dealerPoller ! Envelope("no_action", Map("actorRef" -> rcvActorRef.path.toStringWithAddress(rcvActorRef.path.address)), "some body of text for test message "+msgCount)
       }}
-      Thread.sleep(sleepDuration)
+      //Thread.sleep(sleepDuration)
     }
+    log info ("Done sending message envelopes")
+    Thread.sleep(20000)
+    log info ("after 20 seconds...")
+    rcvActorRef ! 'printresults
+    Thread.sleep(20000)
+    log info ("after 40 seconds...")
+    rcvActorRef ! 'printresults
+    Thread.sleep(20000)
+    log info ("after 60 seconds...")
+    rcvActorRef ! 'printresults
+    Thread.sleep(20000)
+    log info ("after 80 seconds...")
+    rcvActorRef ! 'printresults
+    Thread.sleep(20000)
+    log info ("after 100 seconds...")
+    rcvActorRef ! 'printresults
+    Thread.sleep(20000)
+    log info ("after 120 seconds...")
+    rcvActorRef ! 'printresults
+    Thread.sleep(20000)
+    log info ("after 140 seconds...")
+    rcvActorRef ! 'printresults
+    Thread.sleep(20000)
+    log info ("after 160 seconds...")
+    rcvActorRef ! 'printresults
+    Thread.sleep(20000)
+    log info ("after 180 seconds...")
+    rcvActorRef ! 'printresults
 
   }
 
