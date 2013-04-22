@@ -15,82 +15,66 @@ import java.util.Date
  * Bootstrap for ZmqClient Akka microkernel.
  */
 class ZmqClientBoot extends akka.kernel.Bootable {
-  def startup = {
+  val config = com.typesafe.config.ConfigFactory.load()
+  val system = ActorSystem("zmqpClientSystem", config)
+  
+  val log = system.log
 
-    val config = com.typesafe.config.ConfigFactory.load()
-    val system = ActorSystem("zmqpClientSystem", config)
-    val log = system.log
+  printf("Version string: %s, Version int: %d\n", ZMQ.getVersionString, ZMQ.getFullVersion)
 
-    printf("Version string: %s, Version int: %d\n", ZMQ.getVersionString, ZMQ.getFullVersion)
+  val serverConnection = system.settings.config.getString("zmq.server.connection")//"tcp://vagrant-zmq-server:5559"
 
-    val serverConnection = system.settings.config.getString("zmq.server.connection")//"tcp://vagrant-zmq-server:5559"
-
-    val start = new Date
-    val msgs = system.settings.config.getInt("zmq.numberOfMessages") // 1000000
-    val sleepDuration = system.settings.config.getLong("zmq.batchWaitDuration") // 250
-    val throughput = system.settings.config.getInt("zmq.throughput") // 1000
-    
-    trait BrokerDealerDependencies extends BrokerDealerRequirements {
-      val zmqContext: Context = ZMQ.context(1)
-    }
-    val dealerPoller = system.actorOf(Props(new DealerPollerImpl(serverConnection, 500) with BrokerDealerDependencies))
-    val rcvActorRef = system.actorOf(Props(new Actor {
-      var msgCounter = 0
-      def receive = {
-        case msg: Envelope => {
-          // log info("Got message back from DealerPoller " + msg.toString)
-          msgCounter += 1
-          if (msgCounter >= msgs) {
-            log info("Round trip message counter: " + msgCounter)
-            val end = new Date
-            log info("Time to round trip " + msgs + " messages : " + (end.getTime() - start.getTime()))
-          }
+  val msgs = system.settings.config.getInt("zmq.numberOfMessages") // 1000000
+  
+  trait BrokerDealerDependencies extends BrokerDealerRequirements {
+    val zmqContext: Context = ZMQ.context(1)
+  }
+  val dealerPoller = system.actorOf(Props(new DealerPollerImpl(serverConnection, 500) with BrokerDealerDependencies))
+  val rcvActorRef = system.actorOf(Props(new Actor {
+    var msgCounter = 0
+    var start = System.currentTimeMillis
+    def receive = {
+      case msg: Envelope => {
+        // log info("Got message back from DealerPoller " + msg.toString)
+        msgCounter += 1
+        if (msgCounter >= msgs) {
+          log info("Round trip message counter: " + msgCounter)
+          val end = System.currentTimeMillis
+          val duration = (end - start)
+          log info("Time to round trip " + msgs + " messages : " + duration)
+          log info ("Messages per second " + (msgs / duration * 1000))
         }
-        case 'printresults => log info("Round trip message counter: " + msgCounter)
-        case other => log error("Unsupported message " + other.toString)
       }
-    }))
-    var msgCount = 0
-    (1 to (msgs / throughput)) map { i =>
-      (1 to throughput) map { j => {
-        msgCount += 1
-        dealerPoller ! Envelope("no_action", Map("actorRef" -> rcvActorRef.path.toStringWithAddress(rcvActorRef.path.address)), "some body of text for test message "+msgCount)
-      }}
-      //Thread.sleep(sleepDuration)
+      case 'reset => {
+        msgCounter = 0
+        start = System.currentTimeMillis
+      }
+      case 'printresults => log info("Round trip message counter: " + msgCounter)
+      case other => log error("Unsupported message " + other.toString)
     }
-    log info ("Done sending message envelopes")
-    Thread.sleep(20000)
-    log info ("after 20 seconds...")
-    rcvActorRef ! 'printresults
-    Thread.sleep(20000)
-    log info ("after 40 seconds...")
-    rcvActorRef ! 'printresults
-    Thread.sleep(20000)
-    log info ("after 60 seconds...")
-    rcvActorRef ! 'printresults
-    Thread.sleep(20000)
-    log info ("after 80 seconds...")
-    rcvActorRef ! 'printresults
-    Thread.sleep(20000)
-    log info ("after 100 seconds...")
-    rcvActorRef ! 'printresults
-    Thread.sleep(20000)
-    log info ("after 120 seconds...")
-    rcvActorRef ! 'printresults
-    Thread.sleep(20000)
-    log info ("after 140 seconds...")
-    rcvActorRef ! 'printresults
-    Thread.sleep(20000)
-    log info ("after 160 seconds...")
-    rcvActorRef ! 'printresults
-    Thread.sleep(20000)
-    log info ("after 180 seconds...")
-    rcvActorRef ! 'printresults
+  }))
 
+  def startup = {
+    reset
+    testZmq
+  }
+  
+  def testZmq {
+    (1 to msgs) map { msgCount =>
+      dealerPoller ! Envelope("no_action", Map("actorRef" -> rcvActorRef.path.toStringWithAddress(rcvActorRef.path.address)), "some body of text for test message "+msgCount)
+    }
+  }
+  
+  def reset {
+    rcvActorRef ! 'reset
+  }
+  
+  def checkStatus {
+    rcvActorRef ! 'printresults
   }
 
   def shutdown = {
-
+    system.shutdown()
   }
 }
 
